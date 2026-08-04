@@ -5,6 +5,7 @@ const NAV_LINKS = [
   { href: "/locatar", label: "Dashboard" },
   { href: "/locatar/istoric", label: "Istoric" },
   { href: "/locatar/sesizari", label: "Sesizări" },
+  { href: "/notificari", label: "Notificări" },
 ];
 
 export default async function LocatarLayout({

@@ -15,42 +15,60 @@ Legendă: ✅ implementat · 🚧 în lucru · ⬜ neînceput
 - ✅ Formula de calcul cheltuieli lunare ca serviciu pur în `domain/`, cu test unitar
 - ✅ Dashboard shells (placeholder) pentru ambele roluri, ca bază pentru ETAPA 2/3
 
-## ETAPA 2 — Dashboard locatar ⬜
+## ETAPA 2 — Dashboard locatar ✅
 
-- ⬜ Repository `MonthlyCostsRepository` (Supabase) + use-case `GetCurrentMonthCosts`
-- ⬜ Use-case `GetCostsHistory` (istoric luni precedente)
-- ⬜ Componente dashboard: card sumar (nume, bloc, scară, apartament, lună),
-  tabel defalcare costuri, TOTAL DE PLATĂ
-- ⬜ Pagină istoric cu selector de lună
-- ⬜ Buton „ASISTENȚĂ” (deschide formular sesizare rapid / contact administrator)
+- ✅ Repository-uri Supabase (`residents`, `apartments`, `staircases`, `blocks`,
+  `monthly_costs`, `payments`) + use-case `getLocatarDashboard`
+- ✅ Use-case `getLocatarCostsHistory` (istoric luni precedente)
+- ✅ Card sumar (nume, bloc, scară, apartament, lună), defalcare costuri,
+  TOTAL DE PLATĂ, status plată
+- ✅ Pagină istoric (`/locatar/istoric`)
+- ✅ Buton „ASISTENȚĂ” (link către `/locatar/sesizari`)
+- ✅ Descărcare PDF (`/api/locatar/pdf`, buton pe dashboard și per-lună în istoric)
 
-## ETAPA 3 — Dashboard administrator ⬜
+## ETAPA 3 — Dashboard administrator ✅
 
-- ⬜ Use-case-uri: `CreateBlock`, `CreateStaircase`, `CreateApartment`, `AssignResident`
-- ⬜ Use-case `GenerateMonthlyCosts` (introducere consumuri → calcul automat,
-  folosind `domain/services/calculateMonthlyTotal`)
-- ⬜ Formulare gestionare blocuri/scări/apartamente/locatari
-- ⬜ Formular introducere consumuri lunare (bulk per apartament)
-- ⬜ Dashboard administrator: nr. blocuri, nr. apartamente, total de încasat,
-  total restanțe, nr. sesizări active (query agregat + RLS pe `block_admins`)
-- ⬜ Gestionare plăți: marcare `NEPLATIT` / `PARTIAL` / `PLATIT`, istoric plăți
-- ⬜ Audit log pentru fiecare mutație de administrator
+- ✅ Use-case-uri: `createBlock`, `createStaircase`, `createApartment`,
+  `assignResidentByEmail` (căutare user după email cu client service role,
+  autorizare verificată în use-case)
+- ✅ Use-case `generateMonthlyCosts` (introducere consumuri → calcul automat,
+  `total_amount` calculat de Postgres; `domain/services/calculateMonthlyTotal`
+  folosit pentru previzualizare live în UI)
+- ✅ Formulare gestionare blocuri/scări/apartamente/locatari
+  (`/administrator/blocuri`, `/administrator/blocuri/[blockId]`)
+- ✅ Formular introducere consumuri lunare per apartament (`/administrator/consumuri`)
+- ✅ Dashboard administrator cu date reale: nr. blocuri, nr. apartamente,
+  total de încasat, total restanțe, nr. sesizări active (RLS pe `block_admins`)
+- ✅ Gestionare plăți: marcare `NEPLATIT` / `PARTIAL` / `PLATIT`, istoric plăți
+  (`/administrator/plati`)
+- ✅ Audit log pentru fiecare mutație de administrator (`recordAuditLog`,
+  scriere via service role — `audit_log` nu are politică RLS de INSERT)
 
-## ETAPA 4 — Sesizări ⬜
+## ETAPA 4 — Sesizări ✅
 
-- ⬜ Use-case `CreateTicket` (validare zod, categorie, apartament curent)
-- ⬜ Upload imagine opțională → Supabase Storage (bucket privat, URL semnat)
-- ⬜ Listă sesizări (locatar: proprii; administrator: pe blocurile lui, filtrabile)
-- ⬜ Use-case `UpdateTicketStatus` (doar administrator) — `NOUA → IN_LUCRU → REZOLVATA`
-- ⬜ Notificare automată către locatar la schimbarea statusului
+- ✅ Use-case `createTicket` (validare zod, categorie, apartament rezolvat din `residents`)
+- ✅ Upload imagine opțională → Supabase Storage, bucket privat `ticket-images`
+  (migrație `0002_ticket_images_storage.sql`), afișare prin URL semnat (1h TTL)
+- ✅ Listă sesizări (locatar: proprii, `/locatar/sesizari`; administrator: pe
+  blocurile lui, RLS aplicat, `/administrator/sesizari`)
+- ✅ Use-case `updateTicketStatus` (doar administrator) — `NOUA → IN_LUCRU → REZOLVATA`
+- ✅ Notificare automată către locatar la schimbarea statusului (`createNotification`,
+  scriere via service role — `notifications` nu are politică RLS de INSERT)
 
-## ETAPA 5 — PDF, notificări, rapoarte ⬜
+## ETAPA 5 — PDF, notificări, rapoarte ✅
 
-- ⬜ Generare PDF listă de plată lunară (route handler, server-side)
-- ⬜ Notificare la generarea listei lunare (toți locatarii blocului)
-- ⬜ Notificare automată pentru restanțe (job / trigger pe `payments`)
-- ⬜ Centru de notificări (realtime, Supabase Realtime)
-- ⬜ Rapoarte financiare administrator (încasări vs. restanțe, per bloc/lună, export)
+- ✅ Generare PDF listă de plată lunară (`GET /api/locatar/pdf?month=YYYY-MM`,
+  `pdfkit`, server-side — vezi `infrastructure/pdf/payment-slip.ts`)
+- ✅ Notificare la generarea listei lunare, către locatarul apartamentului
+  (`LISTA_GENERATA`, în `generateMonthlyCosts`)
+- ✅ Notificare automată pentru restanțe, când `debt > 0` la generare
+  (`RESTANTA`)
+- ✅ Centru de notificări (`/notificari`, comun ambelor roluri) — listă +
+  marcare individuală ca citit. **Nu** e realtime (Supabase Realtime rămâne
+  o extensie viitoare — vezi Note de execuție)
+- ✅ Raport financiar administrator (`/administrator/rapoarte`): total
+  facturat vs. încasat vs. restanță, per lună, pe ultimele 12 luni cu date.
+  Fără export (CSV/PDF) — poate fi adăugat ulterior
 
 ## Note de execuție
 
@@ -61,3 +79,19 @@ Legendă: ✅ implementat · 🚧 în lucru · ⬜ neînceput
   `0001_init_schema.sql` după ce a fost aplicat pe un mediu.
 - Testele unitare pentru `domain/services` sunt obligatorii la orice
   modificare a formulei de calcul.
+
+## Ce a rămas neimplementat / posibile extensii
+
+Toate cele 5 etape din cerință sunt implementate funcțional. Rămân
+îmbunătățiri posibile, neincluse pentru a păstra scopul rezonabil:
+
+- Notificările sunt citite la refresh de pagină, nu live (Supabase Realtime
+  ar permite actualizare fără reload).
+- Prețurile apă/canalizare se introduc manual la fiecare listă lunară;
+  tabela `tariffs` există în schemă dar nu are încă UI de gestionare
+  centralizată (ar permite reutilizarea automată a ultimului preț setat).
+- Raportul financiar nu are export (CSV/PDF) și nu e filtrabil per bloc.
+- Nu există flux de "mutare" a unui locatar (istoric `moved_out_at` — coloana
+  există, dar nimic din UI nu o setează încă).
+- Fără teste de integrare pentru RLS (doar teste unitare pentru
+  `domain/services`); recomandat înainte de producție.
