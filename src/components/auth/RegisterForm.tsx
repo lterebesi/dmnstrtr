@@ -64,6 +64,11 @@ export function RegisterForm() {
             {state.error}
           </p>
         )}
+        {state.info && (
+          <p role="status" className="text-sm text-green-700">
+            {state.info}
+          </p>
+        )}
         <Button type="submit" disabled={isPending} className="w-full">
           {isPending ? "Se creează contul..." : "Creează cont"}
         </Button>

@@ -6,9 +6,12 @@ import { loginSchema, registerSchema } from "@/lib/validation/auth";
 
 export interface AuthActionState {
   error: string | null;
+  info?: string;
 }
 
 const GENERIC_LOGIN_ERROR = "Email sau parolă incorectă.";
+const EMAIL_NOT_CONFIRMED_ERROR =
+  "Contul nu e confirmat încă. Verifică emailul pentru linkul de confirmare.";
 
 export async function loginAction(
   _prevState: AuthActionState,
@@ -27,7 +30,12 @@ export async function loginAction(
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) {
-    return { error: GENERIC_LOGIN_ERROR };
+    return {
+      error:
+        error.code === "email_not_confirmed"
+          ? EMAIL_NOT_CONFIRMED_ERROR
+          : GENERIC_LOGIN_ERROR,
+    };
   }
 
   redirect("/");
@@ -52,7 +60,7 @@ export async function registerAction(
   const { name, email, phone, password, role } = parsed.data;
   const supabase = await createSupabaseServerClient();
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -66,6 +74,15 @@ export async function registerAction(
         error.code === "user_already_exists"
           ? "Există deja un cont cu acest email."
           : "Înregistrarea a eșuat. Încearcă din nou.",
+    };
+  }
+
+  // Cu "Confirm email" activat în Supabase, signUp nu creează o sesiune —
+  // contul trebuie confirmat prin linkul trimis pe email înainte de /login.
+  if (!data.session) {
+    return {
+      error: null,
+      info: "Cont creat! Verifică emailul pentru linkul de confirmare, apoi conectează-te.",
     };
   }
 
