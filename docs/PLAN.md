@@ -44,13 +44,16 @@ Legendă: ✅ implementat · 🚧 în lucru · ⬜ neînceput
 - ✅ Audit log pentru fiecare mutație de administrator (`recordAuditLog`,
   scriere via service role — `audit_log` nu are politică RLS de INSERT)
 
-## ETAPA 4 — Sesizări ⬜
+## ETAPA 4 — Sesizări ✅
 
-- ⬜ Use-case `CreateTicket` (validare zod, categorie, apartament curent)
-- ⬜ Upload imagine opțională → Supabase Storage (bucket privat, URL semnat)
-- ⬜ Listă sesizări (locatar: proprii; administrator: pe blocurile lui, filtrabile)
-- ⬜ Use-case `UpdateTicketStatus` (doar administrator) — `NOUA → IN_LUCRU → REZOLVATA`
-- ⬜ Notificare automată către locatar la schimbarea statusului
+- ✅ Use-case `createTicket` (validare zod, categorie, apartament rezolvat din `residents`)
+- ✅ Upload imagine opțională → Supabase Storage, bucket privat `ticket-images`
+  (migrație `0002_ticket_images_storage.sql`), afișare prin URL semnat (1h TTL)
+- ✅ Listă sesizări (locatar: proprii, `/locatar/sesizari`; administrator: pe
+  blocurile lui, RLS aplicat, `/administrator/sesizari`)
+- ✅ Use-case `updateTicketStatus` (doar administrator) — `NOUA → IN_LUCRU → REZOLVATA`
+- ✅ Notificare automată către locatar la schimbarea statusului (`createNotification`,
+  scriere via service role — `notifications` nu are politică RLS de INSERT)
 
 ## ETAPA 5 — PDF, notificări, rapoarte ⬜
 

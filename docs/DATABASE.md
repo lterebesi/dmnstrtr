@@ -145,3 +145,20 @@ sunt folosite în politici pentru a evita duplicarea logicii.
 
 Migrațiile sunt fișiere SQL numerotate în `supabase/migrations/`, aplicate
 în ordine (compatibile cu `supabase db push` / `supabase migration up`).
+
+- `0001_init_schema.sql` — schema inițială (vezi mai sus)
+- `0002_ticket_images_storage.sql` — bucket privat Supabase Storage
+  `ticket-images` pentru fotografiile atașate sesizărilor, cu politici RLS pe
+  `storage.objects`: fiecare user poate încărca doar în propriul folder
+  (`{auth.uid()}/...`), iar citirea e permisă autorului sau oricărui
+  administrator. Afișarea în UI se face prin URL semnat (expiră în 1h),
+  generat server-side — bucket-ul rămâne privat.
+
+## Note despre INSERT și RLS
+
+`audit_log` și `notifications` au RLS activ dar **fără politică de INSERT**
+pentru sesiunea normală (utilizatorul nu ar trebui să-și poată scrie singur
+intrări de audit sau notificări false). Scrierea în aceste două tabele se
+face deliberat prin clientul cu service role
+(`infrastructure/supabase/admin.ts`), din use-cases server-only —
+vezi `recordAuditLog` și `createNotification`.
