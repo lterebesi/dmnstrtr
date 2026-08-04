@@ -7,6 +7,8 @@ const NAV_LINKS = [
   { href: "/administrator/consumuri", label: "Consumuri" },
   { href: "/administrator/plati", label: "Plăți" },
   { href: "/administrator/sesizari", label: "Sesizări" },
+  { href: "/administrator/rapoarte", label: "Rapoarte" },
+  { href: "/notificari", label: "Notificări" },
 ];
 
 export default async function AdministratorLayout({

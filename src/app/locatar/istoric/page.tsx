@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { getLocatarCostsHistory } from "@/application/use-cases/get-locatar-costs-history";
 import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
 import { PaymentStatusBadge } from "@/components/dashboard/PaymentStatusBadge";
 import { formatCurrency } from "@/lib/format";
 import { formatMonthLabel } from "@/lib/date";
@@ -15,12 +14,7 @@ export default async function IstoricPage() {
 
   return (
     <Card>
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">Istoric luni precedente</h2>
-        <Button variant="secondary" disabled title="Disponibil din ETAPA 5">
-          Descarcă PDF
-        </Button>
-      </div>
+      <h2 className="text-lg font-semibold text-gray-900">Istoric luni precedente</h2>
 
       {history.length === 0 ? (
         <p className="mt-2 text-sm text-gray-500">
@@ -34,7 +28,8 @@ export default async function IstoricPage() {
               <tr className="border-b border-gray-200 text-gray-500">
                 <th className="py-2 pr-4 font-medium">Lună</th>
                 <th className="py-2 pr-4 font-medium">Total de plată</th>
-                <th className="py-2 font-medium">Status</th>
+                <th className="py-2 pr-4 font-medium">Status</th>
+                <th className="py-2 font-medium">PDF</th>
               </tr>
             </thead>
             <tbody>
@@ -46,8 +41,16 @@ export default async function IstoricPage() {
                   <td className="py-2 pr-4 text-gray-900">
                     {formatCurrency(entry.totalAmount)}
                   </td>
-                  <td className="py-2">
+                  <td className="py-2 pr-4">
                     <PaymentStatusBadge status={entry.paymentStatus} />
+                  </td>
+                  <td className="py-2">
+                    <a
+                      href={`/api/locatar/pdf?month=${entry.month.slice(0, 7)}`}
+                      className="text-sm font-medium text-blue-600 hover:underline"
+                    >
+                      Descarcă
+                    </a>
                   </td>
                 </tr>
               ))}

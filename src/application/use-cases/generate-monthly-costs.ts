@@ -2,8 +2,12 @@ import "server-only";
 
 import { createSupabaseServerClient } from "@/infrastructure/supabase/server";
 import { upsertMonthlyCosts } from "@/infrastructure/supabase/repositories/monthly-costs.repository";
+import { findActiveResidentByApartmentId } from "@/infrastructure/supabase/repositories/residents.repository";
 import { recordAuditLog } from "@/infrastructure/supabase/repositories/audit-log.repository";
+import { createNotification } from "@/infrastructure/supabase/repositories/notifications.repository";
 import { calculateMonthlyTotal } from "@/domain/services/calculateMonthlyTotal";
+import { formatCurrency } from "@/lib/format";
+import { formatMonthLabel } from "@/lib/date";
 import type { MonthlyCostInput } from "@/domain/entities/monthly-costs";
 
 /**
@@ -36,6 +40,29 @@ export async function generateMonthlyCosts(
       savedTotal: saved.total_amount,
     },
   });
+
+  const resident = await findActiveResidentByApartmentId(supabase, input.apartmentId);
+  if (resident) {
+    await createNotification({
+      userId: resident.user_id,
+      type: "LISTA_GENERATA",
+      title: `Lista de plată pentru ${formatMonthLabel(input.month)} a fost generată`,
+      body: `TOTAL DE PLATĂ: ${formatCurrency(saved.total_amount)}`,
+      relatedEntity: "monthly_costs",
+      relatedId: saved.id,
+    });
+
+    if (input.debt > 0) {
+      await createNotification({
+        userId: resident.user_id,
+        type: "RESTANTA",
+        title: `Restanță înregistrată pentru ${formatMonthLabel(input.month)}`,
+        body: `Suma restantă: ${formatCurrency(input.debt)}`,
+        relatedEntity: "monthly_costs",
+        relatedId: saved.id,
+      });
+    }
+  }
 
   return saved;
 }

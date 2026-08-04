@@ -1,7 +1,8 @@
 import "server-only";
 
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createSupabaseAdminClient } from "@/infrastructure/supabase/admin";
-import type { NotificationType } from "@/types/database";
+import type { Database, NotificationType } from "@/types/database";
 
 /**
  * `notifications` nu are politică RLS de INSERT (userul doar citește/
@@ -29,4 +30,30 @@ export async function createNotification(entry: {
   if (error) {
     console.error("notifications insert failed", error);
   }
+}
+
+/** Notificările userului curent (sesiune normală — RLS aplicat, self-only). */
+export async function listNotifications(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  limit = 30,
+) {
+  const { data } = await supabase
+    .from("notifications")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  return data ?? [];
+}
+
+export async function markNotificationRead(
+  supabase: SupabaseClient<Database>,
+  notificationId: string,
+) {
+  await supabase
+    .from("notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("id", notificationId);
 }

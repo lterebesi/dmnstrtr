@@ -24,7 +24,7 @@ Legendă: ✅ implementat · 🚧 în lucru · ⬜ neînceput
   TOTAL DE PLATĂ, status plată
 - ✅ Pagină istoric (`/locatar/istoric`)
 - ✅ Buton „ASISTENȚĂ” (link către `/locatar/sesizari`)
-- ⬜ Descărcare PDF (buton prezent, dezactivat — vezi ETAPA 5)
+- ✅ Descărcare PDF (`/api/locatar/pdf`, buton pe dashboard și per-lună în istoric)
 
 ## ETAPA 3 — Dashboard administrator ✅
 
@@ -55,13 +55,20 @@ Legendă: ✅ implementat · 🚧 în lucru · ⬜ neînceput
 - ✅ Notificare automată către locatar la schimbarea statusului (`createNotification`,
   scriere via service role — `notifications` nu are politică RLS de INSERT)
 
-## ETAPA 5 — PDF, notificări, rapoarte ⬜
+## ETAPA 5 — PDF, notificări, rapoarte ✅
 
-- ⬜ Generare PDF listă de plată lunară (route handler, server-side)
-- ⬜ Notificare la generarea listei lunare (toți locatarii blocului)
-- ⬜ Notificare automată pentru restanțe (job / trigger pe `payments`)
-- ⬜ Centru de notificări (realtime, Supabase Realtime)
-- ⬜ Rapoarte financiare administrator (încasări vs. restanțe, per bloc/lună, export)
+- ✅ Generare PDF listă de plată lunară (`GET /api/locatar/pdf?month=YYYY-MM`,
+  `pdfkit`, server-side — vezi `infrastructure/pdf/payment-slip.ts`)
+- ✅ Notificare la generarea listei lunare, către locatarul apartamentului
+  (`LISTA_GENERATA`, în `generateMonthlyCosts`)
+- ✅ Notificare automată pentru restanțe, când `debt > 0` la generare
+  (`RESTANTA`)
+- ✅ Centru de notificări (`/notificari`, comun ambelor roluri) — listă +
+  marcare individuală ca citit. **Nu** e realtime (Supabase Realtime rămâne
+  o extensie viitoare — vezi Note de execuție)
+- ✅ Raport financiar administrator (`/administrator/rapoarte`): total
+  facturat vs. încasat vs. restanță, per lună, pe ultimele 12 luni cu date.
+  Fără export (CSV/PDF) — poate fi adăugat ulterior
 
 ## Note de execuție
 
@@ -72,3 +79,19 @@ Legendă: ✅ implementat · 🚧 în lucru · ⬜ neînceput
   `0001_init_schema.sql` după ce a fost aplicat pe un mediu.
 - Testele unitare pentru `domain/services` sunt obligatorii la orice
   modificare a formulei de calcul.
+
+## Ce a rămas neimplementat / posibile extensii
+
+Toate cele 5 etape din cerință sunt implementate funcțional. Rămân
+îmbunătățiri posibile, neincluse pentru a păstra scopul rezonabil:
+
+- Notificările sunt citite la refresh de pagină, nu live (Supabase Realtime
+  ar permite actualizare fără reload).
+- Prețurile apă/canalizare se introduc manual la fiecare listă lunară;
+  tabela `tariffs` există în schemă dar nu are încă UI de gestionare
+  centralizată (ar permite reutilizarea automată a ultimului preț setat).
+- Raportul financiar nu are export (CSV/PDF) și nu e filtrabil per bloc.
+- Nu există flux de "mutare" a unui locatar (istoric `moved_out_at` — coloana
+  există, dar nimic din UI nu o setează încă).
+- Fără teste de integrare pentru RLS (doar teste unitare pentru
+  `domain/services`); recomandat înainte de producție.

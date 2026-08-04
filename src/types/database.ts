@@ -212,7 +212,8 @@ export interface Database {
           body?: string | null;
           related_entity?: string | null;
           related_id?: string | null;
-        }
+        },
+        { read_at?: string | null }
       >;
       audit_log: Table<
         {

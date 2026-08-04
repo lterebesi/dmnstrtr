@@ -79,9 +79,16 @@ export default async function LocatarDashboardPage() {
           <h3 className="text-base font-semibold text-gray-900">
             Situație financiară — luna curentă
           </h3>
-          <Link href="/locatar/sesizari">
-            <Button variant="secondary">ASISTENȚĂ</Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            {currentMonth && (
+              <a href="/api/locatar/pdf">
+                <Button variant="secondary">Descarcă PDF</Button>
+              </a>
+            )}
+            <Link href="/locatar/sesizari">
+              <Button variant="secondary">ASISTENȚĂ</Button>
+            </Link>
+          </div>
         </div>
 
         {!currentMonth ? (
