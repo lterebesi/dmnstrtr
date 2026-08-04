@@ -15,26 +15,34 @@ Legendă: ✅ implementat · 🚧 în lucru · ⬜ neînceput
 - ✅ Formula de calcul cheltuieli lunare ca serviciu pur în `domain/`, cu test unitar
 - ✅ Dashboard shells (placeholder) pentru ambele roluri, ca bază pentru ETAPA 2/3
 
-## ETAPA 2 — Dashboard locatar ⬜
+## ETAPA 2 — Dashboard locatar ✅
 
-- ⬜ Repository `MonthlyCostsRepository` (Supabase) + use-case `GetCurrentMonthCosts`
-- ⬜ Use-case `GetCostsHistory` (istoric luni precedente)
-- ⬜ Componente dashboard: card sumar (nume, bloc, scară, apartament, lună),
-  tabel defalcare costuri, TOTAL DE PLATĂ
-- ⬜ Pagină istoric cu selector de lună
-- ⬜ Buton „ASISTENȚĂ” (deschide formular sesizare rapid / contact administrator)
+- ✅ Repository-uri Supabase (`residents`, `apartments`, `staircases`, `blocks`,
+  `monthly_costs`, `payments`) + use-case `getLocatarDashboard`
+- ✅ Use-case `getLocatarCostsHistory` (istoric luni precedente)
+- ✅ Card sumar (nume, bloc, scară, apartament, lună), defalcare costuri,
+  TOTAL DE PLATĂ, status plată
+- ✅ Pagină istoric (`/locatar/istoric`)
+- ✅ Buton „ASISTENȚĂ” (link către `/locatar/sesizari`)
+- ⬜ Descărcare PDF (buton prezent, dezactivat — vezi ETAPA 5)
 
-## ETAPA 3 — Dashboard administrator ⬜
+## ETAPA 3 — Dashboard administrator ✅
 
-- ⬜ Use-case-uri: `CreateBlock`, `CreateStaircase`, `CreateApartment`, `AssignResident`
-- ⬜ Use-case `GenerateMonthlyCosts` (introducere consumuri → calcul automat,
-  folosind `domain/services/calculateMonthlyTotal`)
-- ⬜ Formulare gestionare blocuri/scări/apartamente/locatari
-- ⬜ Formular introducere consumuri lunare (bulk per apartament)
-- ⬜ Dashboard administrator: nr. blocuri, nr. apartamente, total de încasat,
-  total restanțe, nr. sesizări active (query agregat + RLS pe `block_admins`)
-- ⬜ Gestionare plăți: marcare `NEPLATIT` / `PARTIAL` / `PLATIT`, istoric plăți
-- ⬜ Audit log pentru fiecare mutație de administrator
+- ✅ Use-case-uri: `createBlock`, `createStaircase`, `createApartment`,
+  `assignResidentByEmail` (căutare user după email cu client service role,
+  autorizare verificată în use-case)
+- ✅ Use-case `generateMonthlyCosts` (introducere consumuri → calcul automat,
+  `total_amount` calculat de Postgres; `domain/services/calculateMonthlyTotal`
+  folosit pentru previzualizare live în UI)
+- ✅ Formulare gestionare blocuri/scări/apartamente/locatari
+  (`/administrator/blocuri`, `/administrator/blocuri/[blockId]`)
+- ✅ Formular introducere consumuri lunare per apartament (`/administrator/consumuri`)
+- ✅ Dashboard administrator cu date reale: nr. blocuri, nr. apartamente,
+  total de încasat, total restanțe, nr. sesizări active (RLS pe `block_admins`)
+- ✅ Gestionare plăți: marcare `NEPLATIT` / `PARTIAL` / `PLATIT`, istoric plăți
+  (`/administrator/plati`)
+- ✅ Audit log pentru fiecare mutație de administrator (`recordAuditLog`,
+  scriere via service role — `audit_log` nu are politică RLS de INSERT)
 
 ## ETAPA 4 — Sesizări ⬜
 
