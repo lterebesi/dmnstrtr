@@ -21,6 +21,13 @@ function roleHomePath(role: "ADMINISTRATOR" | "LOCATAR" | null): string | null {
  * RLS în PostgreSQL și verificată din nou în use-cases.
  */
 export async function proxy(request: NextRequest) {
+  // DOAR pentru development: DISABLE_AUTH=true lasă orice rută să treacă,
+  // fără verificare de sesiune sau rol. Vezi și getCurrentUser() în
+  // lib/auth/current-user.ts. NU seta asta pe un mediu accesibil public.
+  if (process.env.DISABLE_AUTH === "true") {
+    return NextResponse.next();
+  }
+
   const { response, user, supabase } = await refreshSupabaseSession(request);
   const { pathname } = request.nextUrl;
 
